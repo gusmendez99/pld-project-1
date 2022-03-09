@@ -21,11 +21,10 @@ class Tokenizer:
 
     def get_tokens(self):
         tokens = []
-
         while self.active_item:
             # Check if char is in supported alphabet
-            print('Element: ', self.active_item)
-            if self.active_item not in SUPPORTED_ALPHABET:
+            # print(f"Element: '{self.active_item}'")
+            if self.active_item not in SUPPORTED_ALPHABET and self.active_item not in SUPPORTED_OPERATORS:
                 raise Exception(f"Read a unrecognized token, please check your input...")
 
             # Validate tokens
@@ -39,44 +38,65 @@ class Tokenizer:
                 self.move_reader()
                 par_surround = False
 
-                while self.active_item and self.active_item in SUPPORTED_ALPHABET:
-                    if self.active_item == Operator.KLEENE:
-                        tokens.append(Token(Operator.KLEENE))
-                        tokens.append(Token(Operator.R_PAR))
-                        par_surround = True
-                    # TODO: Support to PLUS and QUESTION operators
-                    elif self.active_item == Operator.SYMBOL:
+                while self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item in '*+?'):
+                    if self.active_item in SUPPORTED_ALPHABET:
                         self.add_active_to_symbols_stream
                         tokens.append(Token(Operator.CONCAT))
                         tokens.append(Token(Operator.SYMBOL, self.active_item))
+                    elif self.active_item == OperatorRepr.KLEENE:
+                        tokens.append(Token(Operator.KLEENE))
+                        tokens.append(Token(Operator.R_PAR))
+                        par_surround = True
+                    elif self.active_item == OperatorRepr.PLUS:
+                        tokens.append(Token(Operator.PLUS))
+                        tokens.append(Token(Operator.R_PAR))
+                        par_surround = True
+                    elif self.active_item == OperatorRepr.NULLABLE:
+                        tokens.append(Token(Operator.NULLABLE))
+                        tokens.append(Token(Operator.R_PAR))
+                        par_surround = True
                     
                     # Move again to read the following symbol
                     self.move_reader()
 
-                    if self.active_item and self.active_item == Operator.L_PAR and par_surround:
+                    if self.active_item and self.active_item == OperatorRepr.L_PAR and par_surround:
                         # Means there is a concat operation
                         tokens.append(Token(Operator.CONCAT))
 
-                if self.active_item and self.active_item == Operator.L_PAR and not par_surround: 
+                if self.active_item and self.active_item == OperatorRepr.L_PAR and not par_surround: 
                     tokens.append(Token(Operator.R_PAR))
                     tokens.append(Token(Operator.CONCAT))
                 elif not par_surround:
                     tokens.append(Token(Operator.R_PAR))
             
-            elif self.active_item == Operator.OR:
+            elif self.active_item == OperatorRepr.OR:
                 self.move_reader()
                 tokens.append(Token(Operator.OR))
-
-            elif self.active_item == Operator.L_PAR:
+            elif self.active_item == OperatorRepr.L_PAR:
                 self.move_reader()
                 tokens.append(Token(Operator.L_PAR))
 
-            # TODO: Support PLUS and QUESTION operators
+            elif self.active_item in (')*+?'):
+                if self.active_item == OperatorRepr.R_PAR:
+                    self.move_reader()
+                    tokens.append(Token(Operator.R_PAR))
+                elif self.active_item == OperatorRepr.KLEENE:
+                    self.move_reader()
+                    tokens.append(Token(Operator.KLEENE))
+                elif self.active_item == OperatorRepr.PLUS:
+                    self.move_reader()
+                    tokens.append(Token(Operator.PLUS))
+                elif self.active_item == OperatorRepr.NULLABLE:
+                    self.move_reader()
+                    tokens.append(Token(Operator.NULLABLE))
+
+                if self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item == OperatorRepr.L_PAR):
+                    tokens.append(Token(Operator.CONCAT, '.'))
 
         return tokens
 
 
 if __name__ == '__main__':
-    tokenizer = Tokenizer('a')
+    tokenizer = Tokenizer('a|b*')
     print(tokenizer.get_tokens())
     print(tokenizer.symbols_stream)

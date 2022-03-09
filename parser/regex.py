@@ -7,8 +7,10 @@ END_SYMBOL = '#'
 
 class Operator(Enum):
     """ Map every op with its own precedence """
-    R_PAR = 5
-    L_PAR = 4
+    R_PAR = 7
+    L_PAR = 6
+    NULLABLE = 5
+    PLUS = 4
     KLEENE = 3
     OR = 2
     CONCAT = 1
@@ -17,17 +19,26 @@ class Operator(Enum):
 class OperatorRepr(Enum):
     R_PAR = ")"
     L_PAR = "("
-    KLEENE = "*"
+    NULLABLE = '?'
     PLUS = '+'
-    QUESTION = '?'
+    KLEENE = "*"
     OR = "|"
     CONCAT = "°"
 
+    def __eq__(self, other):
+        if self.__class__ is other.__class__:
+            return self == other
+        
+        try:
+            return str(self.value) == str(other)
+        except:
+            pass
+        return NotImplemented
+
 
 # Language support (Question: do we need to include epsilon? idk)
-SUPPORTED_ALPHABET = ascii_lowercase + ascii_uppercase + digits + (
-    ''.join([e.value for e in OperatorRepr])
-)
+SUPPORTED_ALPHABET = ascii_lowercase + ascii_uppercase + digits + '.'
+SUPPORTED_OPERATORS = ''.join([e.value for e in OperatorRepr])
 
 class Token:
     """ Represent identified token, value must be None if it's an operator """
