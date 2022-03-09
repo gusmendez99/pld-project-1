@@ -39,6 +39,7 @@ class OperatorRepr(Enum):
 # Language support (Question: do we need to include epsilon? idk)
 SUPPORTED_ALPHABET = ascii_lowercase + ascii_uppercase + digits + '.'
 SUPPORTED_OPERATORS = ''.join([e.value for e in OperatorRepr])
+SPECIAL_OPERATORS = ''.join([OperatorRepr.KLEENE.value, OperatorRepr.PLUS.value, OperatorRepr.NULLABLE.value ])
 
 class Token:
     """ Represent identified token, value must be None if it's an operator """

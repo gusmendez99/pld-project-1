@@ -23,7 +23,6 @@ class Tokenizer:
         tokens = []
         while self.active_item:
             # Check if char is in supported alphabet
-            # print(f"Element: '{self.active_item}'")
             if self.active_item not in SUPPORTED_ALPHABET and self.active_item not in SUPPORTED_OPERATORS:
                 raise Exception(f"Read a unrecognized token, please check your input...")
 
@@ -38,7 +37,7 @@ class Tokenizer:
                 self.move_reader()
                 par_surround = False
 
-                while self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item in '*+?'):
+                while self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item in SPECIAL_OPERATORS):
                     if self.active_item in SUPPORTED_ALPHABET:
                         self.add_active_to_symbols_stream
                         tokens.append(Token(Operator.CONCAT))
@@ -76,7 +75,7 @@ class Tokenizer:
                 self.move_reader()
                 tokens.append(Token(Operator.L_PAR))
 
-            elif self.active_item in (')*+?'):
+            elif self.active_item == OperatorRepr.L_PAR or self.active_item in SPECIAL_OPERATORS:
                 if self.active_item == OperatorRepr.R_PAR:
                     self.move_reader()
                     tokens.append(Token(Operator.R_PAR))
@@ -91,7 +90,7 @@ class Tokenizer:
                     tokens.append(Token(Operator.NULLABLE))
 
                 if self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item == OperatorRepr.L_PAR):
-                    tokens.append(Token(Operator.CONCAT, '.'))
+                    tokens.append(Token(Operator.CONCAT))
 
         return tokens
 
