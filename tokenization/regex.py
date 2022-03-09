@@ -35,6 +35,10 @@ class OperatorRepr(Enum):
             pass
         return NotImplemented
 
+    def __str__(self):
+        return self.value
+    
+
 
 # Language support (Question: do we need to include epsilon? idk)
 SUPPORTED_ALPHABET = ascii_lowercase + ascii_uppercase + digits + '.'
@@ -51,7 +55,7 @@ class Token:
         return self.type.value
 
     def __repr__(self):
-        return f'{self.type.name}: {self.value if self.value else Operator[self.type.name].value}'
+        return f'{self.type.name}: {self.value if self.value else OperatorRepr[self.type.name].value}'
 
 # TODO: Evaluate & replece if not needed...
 class RegularExpression:

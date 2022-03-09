@@ -1,4 +1,4 @@
-from regex import *
+from tokenization.regex import *
 
 class Tokenizer:
     def __init__(self, line):
@@ -93,9 +93,3 @@ class Tokenizer:
                     tokens.append(Token(Operator.CONCAT))
 
         return tokens
-
-
-if __name__ == '__main__':
-    tokenizer = Tokenizer('a|b*')
-    print(tokenizer.get_tokens())
-    print(tokenizer.symbols_stream)
