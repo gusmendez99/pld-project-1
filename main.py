@@ -4,9 +4,11 @@ from tree.parser import TreeParser
 
 def main():
     tokenizer = Tokenizer('a|b*')
-    parser = TreeParser(tokenizer.get_tokens())
+    tokens = tokenizer.get_tokens()
+    parser = TreeParser(tokens)
     tree = parser.parse()
-    print(tree)
+    print('Tokens: ', tokens)
+    print('Parsed Tree: ', tree)
 
 if __name__ == '__main__':
     main()
