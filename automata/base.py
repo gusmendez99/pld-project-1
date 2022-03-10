@@ -9,7 +9,7 @@ class Automaton:
         self.final_states = []
         self.transitions = dict()
         self.current_state = None
-        self.prev_state = none
+        self.prev_state = None
         # Regex params
         self.symbols = symbols
         self.regex = regex

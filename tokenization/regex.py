@@ -2,7 +2,7 @@ from enum import Enum
 from string import ascii_lowercase, ascii_uppercase, digits
 
 # Extras
-EPSILON = 'ε'
+EPSILON = 'e' # We cant print unicode 'ɛ'... 
 END_SYMBOL = '#'
 
 class Operator(Enum):
