@@ -29,8 +29,23 @@ class RegexDFA(DFA):
         self.calculate_follow_pos()
 
     def calculate_follow_pos(self):
-        # TODO: implement this method
-        pass
+        for node in self.nodes:
+            if node.value == OperatorRepr.KLEENE:
+                for i in node.last_pos:
+                    child_node = next(filter(lambda x: x.id == i, self.nodes))
+                    child_node.follow_pos += node.first_pos
+            elif node.value == OperatorRepr.CONCAT:
+                for i in node.c1.last_pos:
+                    child_node = next(filter(lambda x: x.id == i, self.nodes))
+                    child_node.follow_pos += node.c2.first_pos
+
+        # Init state & filter nodes with symbols only
+        self.nodes = list(filter(lambda x: x.id, self.nodes))
+        self.augmented_state = self.nodes[-1].id
+        init_state = self.nodes[-1].first_pos
+
+        # Recursion
+        self.calculate_new_states(init_state, next(self.subset_states))
 
     def calculate_new_states(self, state, current_state):
         # TODO: implement this method

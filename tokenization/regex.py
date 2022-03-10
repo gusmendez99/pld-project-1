@@ -23,7 +23,7 @@ class OperatorRepr(Enum):
     PLUS = '+'
     KLEENE = "*"
     OR = "|"
-    CONCAT = "°"
+    CONCAT = "."
 
     def __eq__(self, other):
         if self.__class__ is other.__class__:
