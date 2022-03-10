@@ -41,15 +41,70 @@ class RegexDFA(DFA):
 
         # Init state & filter nodes with symbols only
         self.nodes = list(filter(lambda x: x.id, self.nodes))
-        self.augmented_state = self.nodes[-1].id
-        init_state = self.nodes[-1].first_pos
-
+        entry_node = self.nodes[-1]
+        self.augmented_state = entry_node.id
+        init_state = entry_node.first_pos
         # Recursion
         self.calculate_new_states(init_state, next(self.subset_states))
 
     def calculate_new_states(self, state, current_state):
-        # TODO: implement this method
-        pass
+        if not self.states:
+            self.states.append(set(state))
+            if self.augmented_state in state:
+                self.final_states.update(current_state)
+
+        for symbol in self.symbols:
+            # Nodes with same symbol in follow_pos
+            same_symbols = list(
+                filter(lambda x: x.value == symbol and x.id in state, self.nodes)
+            )
+
+            # New state with current nodes
+            new_state = set()
+            for node in same_symbols:
+                new_state.update(node.follow_pos)
+
+            if new_state not in self.states and new_state:
+                # Extract new state's subset letter
+                self.states.append(new_state)
+                next_state = next(self.subset_states)
+
+                try:
+                    self.transitions[next_state]
+                except:
+                    self.transitions[next_state] = dict()
+
+                try:
+                    existing_states = self.transitions[current_state]
+                except:
+                    self.transitions[current_state] = dict()
+                    existing_states = self.transitions[current_state]
+
+                # Add new state on current symbol
+                existing_states[symbol] = next_state
+                self.transitions[current_state] = existing_states
+
+                if self.augmented_state in new_state:
+                    self.final_states.update(next_state)
+
+                # Recursion
+                self.calculate_new_states(new_state, next_state)
+
+            elif new_state:
+                # New state already exists
+                for i in range(0, len(self.states)):
+                    if self.states[i] == new_state:
+                        state_ref = SET_NAME_STATES[i]
+                        break
+
+                try:
+                    existing_states = self.transitions[current_state]
+                except:
+                    self.transitions[current_state] = dict()
+                    existing_states = self.transitions[current_state]
+
+                existing_states[symbol] = state_ref
+                self.transitions[current_state] = existing_states
 
     def render_node(self, tree_node):
         node_classname = tree_node.__class__.__name__
