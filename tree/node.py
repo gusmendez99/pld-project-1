@@ -86,3 +86,42 @@ class NodeFactory(object):
         except Exception:
             return None
     
+
+
+"""
+ Tree Nodes for DFA & RegexDFA
+"""
+
+class VisitorNode:
+    def __init__(self, state, next_states):
+        self.state = state
+        self.has_been_visited = False
+        self.next_states = next_states
+
+    def __repr__(self):
+        return f"""
+            state: {self.state}
+            -------------------------------
+            -> visited?: {self.has_been_visited}
+            -> next state(s): {self.next_states}'
+        """
+class RegexDFANode:
+    def __init__(self, id, first_pos=None, last_pos=None, nullable=False, value=None, c1=None, c2=None):
+        self.id = id
+        self.first_pos = first_pos
+        self.last_pos = last_pos
+        self.follow_pos = []
+        self.nullable = nullable
+        self.value = value
+        self.c1 = c1
+        self.c2 = c2
+
+    def __repr__(self):
+        return f"""
+            value: ({self.id}, {self.value})
+            ---------------------------------
+            -> first_pos: {self.first_pos}
+            -> last_pos: {self.last_pos}
+            -> follow_pos: {self.follow_pos}
+            -> nullabe: {self.nullable}
+        """

@@ -6,7 +6,7 @@ from tokenization.regex import EPSILON
 # Common
 from string import ascii_uppercase
 from utils.common import save_file
-from utils.visitor import VisitorNode
+from tree.node import VisitorNode
 
 # Use class conventions for sets: [A-Z]
 SET_NAME_STATES = ascii_uppercase
@@ -23,6 +23,13 @@ class DFA(Automaton):
         self.iterations = 0
         self.non_deterministic_final_states = dict()
         self.current_state = INITIAL_STATE_STR
+        self.remove_epsilon()
+
+    def remove_epsilon(self):
+        try:
+            self.symbols.remove(EPSILON)
+        except:
+            pass
 
     def from_NFA(self, nfa):
         # Note: transitions === tables, as we seen in past classes
@@ -99,8 +106,8 @@ class DFA(Automaton):
                     new_state = SET_NAME_STATES[self.iterations]
 
                     try:
-                        curr_dict = self.transitions[current_state]
-                        curr_dict[symbol] = new_state
+                        current_dict = self.transitions[current_state]
+                        current_dict[symbol] = new_state
                     except:
                         self.transitions[current_state] = {symbol: new_state}
 
@@ -124,13 +131,13 @@ class DFA(Automaton):
                     for existing_state, existing_set in self.states.items():
                         if new_set == existing_set:
                             try:
-                                curr_dict = self.transitions[current_state]
+                                current_dict = self.transitions[current_state]
                             except:
                                 self.transitions[current_state] = {}
-                                curr_dict = self.transitions[current_state]
+                                current_dict = self.transitions[current_state]
 
-                            curr_dict[symbol] = existing_state
-                            self.transitions[current_state] = curr_dict
+                            current_dict[symbol] = existing_state
+                            self.transitions[current_state] = current_dict
                             break
 
     def generate_d_states(self):
