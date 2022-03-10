@@ -1,11 +1,16 @@
 from tokenization.regex import *
 
 class Tokenizer:
-    def __init__(self, line):
+    def __init__(self, line="", is_direct_tokenization = False):
         normalized_line = ''.join(line.split())
         self.line = iter(normalized_line)
         self.symbols_stream = set()
         self.active_item = None
+
+        # Just for direct tokenization
+        self.is_direct_tokenization = is_direct_tokenization
+        self.needs_par_surround = False
+
         # First step, move to position 0
         self.move_reader()
 
@@ -29,48 +34,85 @@ class Tokenizer:
             # Validate tokens
             if self.active_item in SUPPORTED_ALPHABET:
                 self.add_active_to_symbols_stream()
+
                 # Surround with parenthesis
-                tokens.append(Token(Operator.L_PAR))
+                if not self.is_direct_tokenization:
+                    tokens.append(Token(Operator.L_PAR))
                 tokens.append(Token(Operator.SYMBOL, self.active_item))
 
                 # Move to read the following symbol
                 self.move_reader()
-                par_surround = False
 
-                while self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item in SPECIAL_OPERATORS):
-                    if self.active_item in SUPPORTED_ALPHABET:
-                        self.add_active_to_symbols_stream
-                        tokens.append(Token(Operator.CONCAT))
-                        tokens.append(Token(Operator.SYMBOL, self.active_item))
-                    elif self.active_item == OperatorRepr.KLEENE:
-                        tokens.append(Token(Operator.KLEENE))
-                        tokens.append(Token(Operator.R_PAR))
-                        par_surround = True
-                    elif self.active_item == OperatorRepr.PLUS:
-                        tokens.append(Token(Operator.PLUS))
-                        tokens.append(Token(Operator.R_PAR))
-                        par_surround = True
-                    elif self.active_item == OperatorRepr.NULLABLE:
-                        tokens.append(Token(Operator.NULLABLE))
-                        tokens.append(Token(Operator.R_PAR))
-                        par_surround = True
-                    
-                    # Move again to read the following symbol
-                    self.move_reader()
-
-                    if self.active_item and self.active_item == OperatorRepr.L_PAR and par_surround:
-                        # Means there is a concat operation
+                # Surround with parenthesis
+                if self.is_direct_tokenization:
+                    # Add token if needed
+                    if self.active_item and (
+                        self.active_item == OperatorRepr.L_PAR or self.active_item in SUPPORTED_ALPHABET
+                    ):
                         tokens.append(Token(Operator.CONCAT))
 
-                if self.active_item and self.active_item == OperatorRepr.L_PAR and not par_surround: 
-                    tokens.append(Token(Operator.R_PAR))
-                    tokens.append(Token(Operator.CONCAT))
-                elif not par_surround:
-                    tokens.append(Token(Operator.R_PAR))
+                else:
+                    par_surround = False
+
+                    while self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item in SPECIAL_OPERATORS):
+                        if self.active_item in SUPPORTED_ALPHABET:
+                            self.add_active_to_symbols_stream
+                            tokens.append(Token(Operator.CONCAT))
+                            tokens.append(Token(Operator.SYMBOL, self.active_item))
+                        elif self.active_item == OperatorRepr.KLEENE:
+                            tokens.append(Token(Operator.KLEENE))
+                            tokens.append(Token(Operator.R_PAR))
+                            par_surround = True
+                        elif self.active_item == OperatorRepr.PLUS:
+                            tokens.append(Token(Operator.PLUS))
+                            tokens.append(Token(Operator.R_PAR))
+                            par_surround = True
+                        elif self.active_item == OperatorRepr.NULLABLE:
+                            tokens.append(Token(Operator.NULLABLE))
+                            tokens.append(Token(Operator.R_PAR))
+                            par_surround = True
+                        
+                        # Move again to read the following symbol
+                        self.move_reader()
+
+                        if self.active_item and self.active_item == OperatorRepr.L_PAR and par_surround:
+                            # Means there is a concat operation
+                            tokens.append(Token(Operator.CONCAT))
+
+                    if self.active_item and self.active_item == OperatorRepr.L_PAR and not par_surround: 
+                        tokens.append(Token(Operator.R_PAR))
+                        tokens.append(Token(Operator.CONCAT))
+                    elif not par_surround:
+                        tokens.append(Token(Operator.R_PAR))
             
             elif self.active_item == OperatorRepr.OR:
                 self.move_reader()
                 tokens.append(Token(Operator.OR))
+
+                if self.is_direct_tokenization:
+                    if self.active_item and (
+                        self.active_item != Operator.L_PAR or self.active_item != Operator.R_PAR
+                    ):
+                        tokens.append(Token(Operator.L_PAR))
+
+                        while self.active_item and (
+                            self.active_item != OperatorRepr.L_PAR or self.active_item not in SPECIAL_OPERATORS
+                        ):
+                            if self.active_item in SUPPORTED_ALPHABET:
+                                self.input.add(self.active_item)
+                                tokens.append(Token(Operator.SYMBOL, self.active_item))
+
+                                self.move_reader()
+                                if self.active_item and (
+                                    self.active_item in SUPPORTED_ALPHABET or self.active_item == Operator.L_PAR
+                                ):
+                                    tokens.append(Token(Operator.CONCAT))
+
+                    if self.active_item and self.active_item in SPECIAL_OPERATORS:
+                        self.needs_par_surround = True
+                    else:
+                        tokens.append(Token(Operator.R_PAR))
+
             elif self.active_item == OperatorRepr.L_PAR:
                 self.move_reader()
                 tokens.append(Token(Operator.L_PAR))
@@ -88,6 +130,9 @@ class Tokenizer:
                 elif self.active_item == OperatorRepr.NULLABLE:
                     self.move_reader()
                     tokens.append(Token(Operator.NULLABLE))
+                elif self.is_direct_tokenization and self.needs_par_surround:
+                    tokens.append(Token(Operator.R_PAR))
+                    self.needs_par_surround = False
 
                 if self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item == OperatorRepr.L_PAR):
                     tokens.append(Token(Operator.CONCAT))
