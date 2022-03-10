@@ -8,7 +8,10 @@ GRAPHVIZ_EDGE = '->'
 GRAPHVIZ_EQUAL = '='
 GRAPHVIZ_TAB = '\t'
 GRAPHVIZ_OUTPUT_PATH = './renders/NFA.gv'
+
+# Init state
 INITIAL_STATE = 1
+INITIAL_STATE_STR = '0'
 
 class NFA(Automaton):
     def __init__(self, parsed_tree, symbols, regex):
@@ -24,6 +27,67 @@ class NFA(Automaton):
         self.render_node(parsed_tree)
         self.generate_transitions()
         self.generate_acceptance_state()
+
+    def simulate(self):
+        try:
+            init_symbol = self.regex[0]
+            self.simulate_regex_symbol(
+                init_symbol,
+                INITIAL_STATE_STR,
+                self.regex
+            )
+            print('NFA simulation done!')
+        except RecursionError:
+            final_existing_symbol = self.regex[0]
+            # Set bool acceptance status
+            self.regex_accept_status = final_existing_symbol in self.symbols and final_existing_symbol != EPSILON
+            print('NFA simulation done!')
+
+    
+    def simulate_regex_symbol(self, regex_symbol, state, regex):
+        if self.regex_accept_status != None:
+            return
+
+        transitions = self.transitions[state]
+        for symbol in transitions:
+            if symbol == EPSILON:
+                if not regex and str(self.final_states) in transitions[EPSILON]:
+                    self.regex_accept_status = True
+                    return
+
+                for epsilon_status in transitions[EPSILON]:
+                    if self.regex_accept_status != None:
+                        break
+                    self.simulate_regex_symbol(regex_symbol, epsilon_status, regex)
+            
+            elif symbol == regex_symbol:
+                next_regex = regex[1:]
+                try:
+                    next_symbol = next_regex[0]
+                except:
+                    next_symbol = None
+
+                if not next_symbol:
+                    if str(self.final_states) in transitions[symbol]:
+                        self.regex_accept_status = True
+                        return
+
+                    elif str(self.final_states) != state:
+                        for symbol_state in transitions[symbol]:
+                            self.simulate_regex_symbol(EPSILON, symbol_state, None)
+                        if self.regex_accept_status != None:
+                            return
+
+                if self.regex_accept_status != None:
+                    return
+
+                for symbol_state in transitions[symbol]:
+                    if not next_symbol and str(symbol_state) == self.final_states:
+                        self.regex_accept_status = True
+                        return
+
+                    self.simulate_regex_symbol(next_symbol, symbol_state, next_regex)
+
 
     def render_node(self, tree_node):
         self.prev_state = self.current_state

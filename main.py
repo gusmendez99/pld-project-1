@@ -9,11 +9,21 @@ def main():
     tokens = tokenizer.get_tokens()
     parser = TreeParser(tokens)
     tree = parser.parse()
-    nfa_test = NFA(tree, tokenizer.symbols_stream, regex_input)
-    
     print('Tokens: ', tokens)
     print('Parsed Tree: ', tree)
-    print('NFA: ', nfa_test)
+
+    input_test = 'abbb'
+
+    # NFA (with Thompson)
+    nfa = NFA(tree, tokenizer.symbols_stream, input_test)
+    print('NFA: ', nfa)
+    
+    nfa.simulate()
+    print(f"NFA accepts input '{input_test}'? ", nfa.regex_accept_status)
+    nfa.render_digraph()
+    print('NFA digraph generated!')
+
+    # TODO: NFA to DFA
 
 
 if __name__ == '__main__':
