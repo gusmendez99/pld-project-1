@@ -147,10 +147,12 @@ class RegexDFA(DFA):
 
         elif node_type == KleeneNode.__name__:
             node_x = self.render_node(node.x)
+
+            is_nullable = True
             first_pos = node_x.first_pos
-            last_pos = node_y.last_pos
+            last_pos = node_x.last_pos
             
-            new_node = RegexDFANode(None, first_pos, last_pos, True, OperatorRepr.KLEENE, node_x)
+            new_node = RegexDFANode(None, first_pos, last_pos, is_nullable, OperatorRepr.KLEENE, node_x)
             self.nodes.append(new_node)
             return new_node
 
@@ -171,7 +173,7 @@ class RegexDFA(DFA):
         elif node_type == NullableNode.__name__:
             # REPLACING RULE: r?  = r|ɛ
             node_x = RegexDFANode(None, list(), list(), True)
-            self.iter += 1
+            self.iterations += 1
             node_y = self.render_node(node.x)
 
             is_nullable = node_x.nullable or node_y.nullable

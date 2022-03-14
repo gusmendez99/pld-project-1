@@ -1,5 +1,5 @@
 from enum import Enum
-from string import ascii_lowercase, ascii_uppercase, digits
+from string import ascii_letters, digits
 
 # Extras
 EPSILON = 'e' # We cant print unicode 'ɛ'... 
@@ -42,7 +42,7 @@ class OperatorRepr(Enum):
 
 # Language support (Question: do we need to include epsilon? idk)
 # Use class conventions: [a-z] + [A-Z] + [0-9] + .
-SUPPORTED_ALPHABET = ascii_lowercase + ascii_uppercase + digits + '.'
+SUPPORTED_ALPHABET = ascii_letters + digits + '.'
 SUPPORTED_OPERATORS = ''.join([e.value for e in OperatorRepr])
 SPECIAL_OPERATORS = ''.join([OperatorRepr.KLEENE.value, OperatorRepr.PLUS.value, OperatorRepr.NULLABLE.value ])
 

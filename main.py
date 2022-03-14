@@ -7,15 +7,16 @@ from automata.dfa import DFA
 RENDER_TO_PDF = True
 
 def main():
-    regex_input = 'a|b*'
+    regex_input = '(a|b)*.a(a|b).(a|b)+'
     tokenizer = Tokenizer(regex_input)
     tokens = tokenizer.get_tokens()
     parser = TreeParser(tokens)
     tree = parser.parse()
-    print('Tokens: ', tokens)
+    for token in tokens:
+        print('Token: ', token)
     print('Parsed Tree: ', tree)
 
-    input_test = 'abbb'
+    input_test = 'aaaabb'
 
     # NFA (with Thompson)
     nfa = NFA(tree, tokenizer.symbols_stream, input_test)
