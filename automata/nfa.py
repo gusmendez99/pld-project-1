@@ -45,7 +45,7 @@ class NFA(Automaton):
 
     
     def simulate_regex_symbol(self, regex_symbol, state, regex):
-        if self.regex_accept_status != None:
+        if self.regex_accept_status:
             return
 
         transitions = self.transitions[state]
@@ -56,7 +56,7 @@ class NFA(Automaton):
                     return
 
                 for epsilon_status in transitions[EPSILON]:
-                    if self.regex_accept_status != None:
+                    if self.regex_accept_status:
                         break
                     self.simulate_regex_symbol(regex_symbol, epsilon_status, regex)
             
@@ -75,10 +75,10 @@ class NFA(Automaton):
                     elif str(self.final_states) != state:
                         for symbol_state in transitions[symbol]:
                             self.simulate_regex_symbol(EPSILON, symbol_state, None)
-                        if self.regex_accept_status != None:
+                        if self.regex_accept_status:
                             return
 
-                if self.regex_accept_status != None:
+                if self.regex_accept_status:
                     return
 
                 for symbol_state in transitions[symbol]:
