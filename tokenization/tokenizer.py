@@ -97,8 +97,8 @@ class Tokenizer:
                     ):
                         tokens.append(Token(Operator.L_PAR))
 
-                        while self.active_item and (
-                            self.active_item != OperatorRepr.L_PAR or self.active_item not in SPECIAL_OPERATORS
+                        while self.active_item and not (
+                            self.active_item == OperatorRepr.R_PAR or self.active_item in SPECIAL_OPERATORS
                         ):
                             if self.active_item in SUPPORTED_ALPHABET:
                                 self.add_active_to_symbols_stream()
@@ -106,12 +106,14 @@ class Tokenizer:
 
                                 self.move_reader()
                                 if self.active_item and (
-                                    self.active_item in SUPPORTED_ALPHABET or self.active_item == Operator.L_PAR
+                                    self.active_item in SUPPORTED_ALPHABET or self.active_item == OperatorRepr.L_PAR
                                 ):
                                     tokens.append(Token(Operator.CONCAT))
 
                         if self.active_item and self.active_item in SPECIAL_OPERATORS:
                             self.needs_par_surround = True
+                        elif self.active_item and self.active_item == OperatorRepr.R_PAR:
+                            tokens.append(Token(Operator.R_PAR))
                         else:
                             tokens.append(Token(Operator.R_PAR))
 
@@ -133,7 +135,7 @@ class Tokenizer:
                     self.move_reader()
                     tokens.append(Token(Operator.NULLABLE))
                 
-                elif self.is_direct_tokenization and self.needs_par_surround:
+                if self.is_direct_tokenization and self.needs_par_surround:
                     tokens.append(Token(Operator.R_PAR))
                     self.needs_par_surround = False
                 
