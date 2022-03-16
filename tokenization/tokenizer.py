@@ -30,7 +30,6 @@ class Tokenizer:
         tokens = []
         while self.active_item:
             # Check if char is in supported alphabet
-            # TODO: Check if it fails on Direct Regex -> DFA (due to # symbol...)
             if self.active_item not in SUPPORTED_ALPHABET and self.active_item not in SUPPORTED_OPERATORS:
                 raise Exception(f"Read a unrecognized token, please check your input...")
 
@@ -90,11 +89,11 @@ class Tokenizer:
             
             elif self.active_item == OperatorRepr.OR:
                 self.move_reader()
-                tokens.append(Token(Operator.OR, OperatorRepr.OR))
+                tokens.append(Token(Operator.OR))
 
                 if self.is_direct_tokenization:
-                    if self.active_item and (
-                        self.active_item != Operator.L_PAR or self.active_item != Operator.R_PAR
+                    if self.active_item and not (
+                        self.active_item == OperatorRepr.L_PAR or self.active_item == OperatorRepr.R_PAR
                     ):
                         tokens.append(Token(Operator.L_PAR))
 
@@ -102,7 +101,7 @@ class Tokenizer:
                             self.active_item != OperatorRepr.L_PAR or self.active_item not in SPECIAL_OPERATORS
                         ):
                             if self.active_item in SUPPORTED_ALPHABET:
-                                self.input.add(self.active_item)
+                                self.add_active_to_symbols_stream()
                                 tokens.append(Token(Operator.SYMBOL, self.active_item))
 
                                 self.move_reader()
@@ -111,10 +110,10 @@ class Tokenizer:
                                 ):
                                     tokens.append(Token(Operator.CONCAT))
 
-                    if self.active_item and self.active_item in SPECIAL_OPERATORS:
-                        self.needs_par_surround = True
-                    else:
-                        tokens.append(Token(Operator.R_PAR))
+                        if self.active_item and self.active_item in SPECIAL_OPERATORS:
+                            self.needs_par_surround = True
+                        else:
+                            tokens.append(Token(Operator.R_PAR))
 
             elif self.active_item == OperatorRepr.L_PAR:
                 self.move_reader()
@@ -139,6 +138,10 @@ class Tokenizer:
                     self.needs_par_surround = False
                 
                 if self.active_item and (self.active_item in SUPPORTED_ALPHABET or self.active_item == OperatorRepr.L_PAR):
-                    tokens.append(Token(Operator.CONCAT, OperatorRepr.CONCAT))
+                    tokens.append(Token(Operator.CONCAT))
 
+        
+        if self.is_direct_tokenization:
+            tokens.append(Token(Operator.CONCAT))
+            tokens.append(Token(Operator.SYMBOL, END_SYMBOL))
         return tokens

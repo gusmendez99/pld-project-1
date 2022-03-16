@@ -19,9 +19,12 @@ class RegexDFA(DFA):
         super(RegexDFA, self).__init__(symbols, regex)
         
         # Specific params
+        self.states = list()
+        self.final_states = set()
         self.tree = tree
         self.augmented_state = None
         self.iterations = 1
+        self.current_state = INITIAL_STATE_STR
         self.subset_states = iter(SET_NAME_STATES)
 
         # Initialize dfa construction
@@ -40,12 +43,15 @@ class RegexDFA(DFA):
                     child_node.follow_pos += node.c2.first_pos
 
         # Init state & filter nodes with symbols only
-        self.nodes = list(filter(lambda x: x.id, self.nodes))
         entry_node = self.nodes[-1]
-        self.augmented_state = entry_node.id
         init_state = entry_node.first_pos
+        
+        self.nodes = list(filter(lambda x: x.id, self.nodes))
+        new_entry_node = self.nodes[-1]
+        self.augmented_state = new_entry_node.id
         # Recursion
-        self.calculate_new_states(init_state, next(self.subset_states))
+        val = next(self.subset_states)
+        self.calculate_new_states(init_state, val)
 
     def calculate_new_states(self, state, current_state):
         if not self.states:
@@ -119,6 +125,7 @@ class RegexDFA(DFA):
             new_node = RegexDFANode(self.iterations, [self.iterations], [self.iterations], value=node.symbol, nullable=False)
             self.nodes.append(new_node)
             return new_node
+        
         elif node_type == OrNode.__name__:
             node_x = self.render_node(node.x)
             self.iterations += 1
@@ -187,8 +194,9 @@ class RegexDFA(DFA):
     def simulate(self):
         current_state = INITIAL_STATE_STR
         for symbol in self.regex:
-            if symbol not in self.symbols:
+            if not symbol in self.symbols:
                 self.regex_accept_status = False
+                return
             
             # Make transition between states
             try:
@@ -202,11 +210,12 @@ class RegexDFA(DFA):
                     current_state = self.transitions[INITIAL_STATE_STR][symbol]
                 else:
                     self.regex_accept_status = False
+                    return
         
         # Final check for acceptance
         self.regex_accept_status = current_state in self.final_states
 
-    def render_digraph(self):
+    def render_digraph(self, filename = None, view = True):
         states = set(self.transitions.keys())
         final_states = set(self.final_states)
         symbols = set(self.symbols)
@@ -222,6 +231,6 @@ class RegexDFA(DFA):
         graph = dfa_digraph.trim().to_graphviz()
         graph.attr(rankdir='LR')
 
-        save_file(GRAPHVIZ_OUTPUT_PATH, graph.source)
-        graph.render(GRAPHVIZ_OUTPUT_PATH, format='pdf', view=True)
+        save_file(filename if filename else GRAPHVIZ_OUTPUT_PATH, graph.source)
+        graph.render(filename if filename else GRAPHVIZ_OUTPUT_PATH, format='pdf', view=view)
     

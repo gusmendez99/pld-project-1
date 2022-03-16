@@ -28,7 +28,7 @@ class OperatorRepr(Enum):
 
     def __eq__(self, other):
         if self.__class__ is other.__class__:
-            return self == other
+            return self.value == other
         
         try:
             return str(self.value) == str(other)

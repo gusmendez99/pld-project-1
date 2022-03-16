@@ -3,12 +3,12 @@ from tokenization.tokenizer import Tokenizer
 from tree.parser import TreeParser
 from automata.nfa import NFA
 from automata.dfa import DFA
+from automata.regex_dfa import RegexDFA
 # utils
 from utils.common import load_txt_file
 
 ABC_TEST_PATH = './tests/abc_tests.txt'
 BINARY_TEST_PATH = './tests/bin_tests.txt'
-RENDER_TO_PDF = True
 
 MAIN_MENU = """
 
@@ -57,7 +57,7 @@ def test_thompson_and_subsets(regex, input_test = None, simulate = False, render
         nfa.simulate()
         print(f"NFA accepts input '{input_test}'? ", nfa.regex_accept_status)
     if render:
-        nfa.render_digraph(output_filename, view_pdf)
+        nfa.render_digraph(output_filename.replace('FA', 'NFA'), view_pdf)
         print('[OUT] NFA digraph generated!')
 
     # NFA to DFA via Subsets
@@ -67,12 +67,25 @@ def test_thompson_and_subsets(regex, input_test = None, simulate = False, render
         dfa.simulate()
         print(f"DFA accepts input '{input_test}'? ", dfa.regex_accept_status)
     if render:
-        dfa.render_digraph(output_filename, view_pdf)
+        dfa.render_digraph(output_filename.replace('FA', 'DFA'), view_pdf)
         print('[OUT] DFA digraph generated!')
 
 
-def test_direct_method(regex, input_test):
-    pass
+def test_direct_method(regex, input_test = None, simulate = False, render=True, output_filename='', view_pdf=True):
+    tokenizer = Tokenizer(regex, is_direct_tokenization=True)
+    tokens = tokenizer.get_tokens()
+    parser = TreeParser(tokens)
+    tree = parser.parse()
+
+    # Direct DFA (from regex)
+    regex_dfa = RegexDFA(tree, tokenizer.symbols_stream, input_test)
+    if simulate and input_test:
+        regex_dfa.simulate()
+        print(f"Direct DFA accepts input '{input_test}'? ", regex_dfa.regex_accept_status)
+    if render:
+        regex_dfa.render_digraph(output_filename, view_pdf)
+        print('[OUT] Direct DFA digraph generated!')
+
 
 def main():
     option = None
@@ -104,8 +117,6 @@ def main():
                         )
                     except Exception as e:
                         print(f'\n\tAn error ocurred, please check your regex: {e}')
-                        input_regex = None
-                        input_test = None
 
                     reset_regex = input('-> Do you want to reset regex expr? (y/n): ') or 'n'
                     if reset_regex and reset_regex.lower() == 'y':
@@ -113,8 +124,20 @@ def main():
                         input_test = input('Enter the eval expr: ')
 
                 elif fa_option == 2:
-                    # TODO: Use the DFA class in mode 'direct' here!...
-                    pass
+                    try:
+                        test_direct_method(
+                            regex = input_regex,
+                            input_test = input_test,
+                            simulate = True,
+                            render = True
+                        )
+                    except Exception as e:
+                        print(f'\n\tAn error ocurred, please check your regex: {e}')
+
+                    reset_regex = input('-> Do you want to reset regex expr? (y/n): ') or 'n'
+                    if reset_regex and reset_regex.lower() == 'y':
+                        input_regex = input('Enter the regex: ')
+                        input_test = input('Enter the eval expr: ')
 
                 elif fa_option == 3:
                     fa_option = 0
@@ -138,7 +161,13 @@ def main():
                             test_thompson_and_subsets(
                                 regex = regex_test,
                                 render = True,
-                                output_filename = f"./renders/DFA_{iteration}.gv",
+                                output_filename = f"./tests/renders/FA_{iteration}.gv",
+                                view_pdf = False
+                            )
+                            test_direct_method(
+                                regex = regex_test,
+                                render = True,
+                                output_filename = f"./tests/renders/DFA_{iteration}.gv",
                                 view_pdf = False
                             )
                             iteration += 1
