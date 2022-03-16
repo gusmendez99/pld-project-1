@@ -167,7 +167,7 @@ def main():
                             test_direct_method(
                                 regex = regex_test,
                                 render = True,
-                                output_filename = f"./tests/renders/DFA_{iteration}.gv",
+                                output_filename = f"./tests/renders/RegexDFA_{iteration}.gv",
                                 view_pdf = False
                             )
                             iteration += 1
