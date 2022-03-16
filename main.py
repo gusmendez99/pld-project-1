@@ -3,37 +3,169 @@ from tokenization.tokenizer import Tokenizer
 from tree.parser import TreeParser
 from automata.nfa import NFA
 from automata.dfa import DFA
+# utils
+from utils.common import load_txt_file
 
+ABC_TEST_PATH = './tests/abc_tests.txt'
+BINARY_TEST_PATH = './tests/bin_tests.txt'
 RENDER_TO_PDF = True
-INPUT_TEST = 'aaaabbb'
-INPUT_REGEX = '(a|b)*a(a|b)(a|b)+'
 
-def main():
-    tokenizer = Tokenizer(INPUT_REGEX)
+MAIN_MENU = """
+
+            WELCOME
+    -----------------------
+    Select a valid option:
+
+    1. Enter a new regex expr
+    2. Run TXT tests
+
+    3. Exit
+"""
+
+FA_MENU = """
+
+            DFA/NFA
+    -----------------------
+    Select a valid option:
+    1. Thompson + Subsets const. (Generates both NFA & DFA)
+    2. Direct DFA
+
+    3. <- Back
+
+"""
+
+TESTS_MENU = """
+
+            TESTS
+    -----------------------
+    1. Run ABC tests
+    2. Run Binary tests
+
+    3. <- Back
+
+"""
+
+def test_thompson_and_subsets(regex, input_test = None, simulate = False, render=True, output_filename='', view_pdf=True):
+    tokenizer = Tokenizer(regex)
     tokens = tokenizer.get_tokens()
     parser = TreeParser(tokens)
     tree = parser.parse()
-    # print('Parsed Tree: ', tree)
 
     # NFA (with Thompson)
-    nfa = NFA(tree, tokenizer.symbols_stream, INPUT_TEST)
-    
-    nfa.simulate()
-    print(f"NFA accepts input '{INPUT_TEST}'? ", nfa.regex_accept_status)
-
-    if RENDER_TO_PDF:
-        nfa.render_digraph()
+    nfa = NFA(tree, tokenizer.symbols_stream, input_test)
+    if simulate and input_test:
+        nfa.simulate()
+        print(f"NFA accepts input '{input_test}'? ", nfa.regex_accept_status)
+    if render:
+        nfa.render_digraph(output_filename, view_pdf)
         print('[OUT] NFA digraph generated!')
 
-    # NFA to DFA
-    dfa = DFA(tokenizer.symbols_stream, INPUT_TEST)
+    # NFA to DFA via Subsets
+    dfa = DFA(tokenizer.symbols_stream, input_test)
     dfa.from_NFA(nfa)
-    dfa.simulate()
-    print(f"DFA accepts input '{INPUT_TEST}'? ", dfa.regex_accept_status)
-
-    if RENDER_TO_PDF:
-        dfa.render_digraph()
+    if simulate and input_test:
+        dfa.simulate()
+        print(f"DFA accepts input '{input_test}'? ", dfa.regex_accept_status)
+    if render:
+        dfa.render_digraph(output_filename, view_pdf)
         print('[OUT] DFA digraph generated!')
+
+
+def test_direct_method(regex, input_test):
+    pass
+
+def main():
+    option = None
+
+    while option != 0:
+        print(MAIN_MENU)
+        option = int(input('> '))
+
+        if option == 1:
+            fa_option = None
+            input_regex = None
+            input_test = None
+
+            while fa_option != 0:
+                if not input_regex or not input_test:
+                    input_regex = input('Enter the regex: ')
+                    input_test = input('Enter the eval expr: ')
+
+                print(FA_MENU)
+                fa_option = int(input('> '))
+
+                if fa_option == 1:
+                    try:
+                        test_thompson_and_subsets(
+                            regex = input_regex,
+                            input_test = input_test,
+                            simulate = True,
+                            render = True
+                        )
+                    except Exception as e:
+                        print(f'\n\tAn error ocurred, please check your regex: {e}')
+                        input_regex = None
+                        input_test = None
+
+                    reset_regex = input('-> Do you want to reset regex expr? (y/n): ') or 'n'
+                    if reset_regex and reset_regex.lower() == 'y':
+                        input_regex = input('Enter the regex: ')
+                        input_test = input('Enter the eval expr: ')
+
+                elif fa_option == 2:
+                    # TODO: Use the DFA class in mode 'direct' here!...
+                    pass
+
+                elif fa_option == 3:
+                    fa_option = 0
+                else:
+                    print('Not a valid option, going back to main menu...')
+                    fa_option = 0
+
+        elif option == 2:
+            test_option = None
+            while test_option != 0:
+                print(TESTS_MENU)
+                test_option = int(input('> '))
+
+                if test_option == 1:
+                    try:
+                        # Test ABC txt file
+                        test_lines = load_txt_file(ABC_TEST_PATH)
+                        iteration = 0
+                        for regex_test in test_lines:
+                            # Simulation input is not required, we only want to generate the NFA & DFA outputs 
+                            test_thompson_and_subsets(
+                                regex = regex_test,
+                                render = True,
+                                output_filename = f"./renders/DFA_{iteration}.gv",
+                                view_pdf = False
+                            )
+                            iteration += 1
+
+                        print('-> ABC tests passed!')
+                    except Exception as e:
+                        print(f'\n\tAn error ocurred, please regex on test file: {e}')
+
+                elif test_option == 2:
+                    try:
+                        # Test Binary txt file
+                        print('-> Binary tests passed!')
+                    except Exception as e:
+                        print(f'\n\tAn error ocurred, please check your regex: {e}')
+
+                elif test_option == 3:
+                    test_option = 0
+                else:
+                    print('Not a valid option, going back to main menu...')
+                    test_option = 0
+
+        elif option == 3:
+            option = 0
+            print('Exiting...')
+        else:
+            print('Not a valid option, exiting...')
+            test_option = 0
 
 
 if __name__ == '__main__':

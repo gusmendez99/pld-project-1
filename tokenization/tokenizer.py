@@ -3,6 +3,8 @@ from tokenization.regex import *
 class Tokenizer:
     def __init__(self, line="", is_direct_tokenization = False):
         normalized_line = ''.join(line.split())
+        # Special case: remove innecessary concat input symbol (you must know why...)
+        normalized_line = normalized_line.replace(OperatorRepr.CONCAT.value, EMPTY)
         self.line = iter(normalized_line)
         self.symbols_stream = set()
         self.active_item = None

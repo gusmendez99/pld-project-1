@@ -2,8 +2,9 @@ from enum import Enum
 from string import ascii_letters, digits
 
 # Extras
-EPSILON = 'e' # We cant print unicode 'ɛ'... 
+EPSILON = 'e' # We can't print unicode 'ɛ'... 
 END_SYMBOL = '#'
+EMPTY = ''
 
 class Operator(Enum):
     """ Map every op with its own precedence """
@@ -39,7 +40,6 @@ class OperatorRepr(Enum):
         return self.value
     
 
-
 # Language support (Question: do we need to include epsilon? idk)
 # Use class conventions: [a-z] + [A-Z] + [0-9] + .
 SUPPORTED_ALPHABET = ascii_letters + digits + '.'
@@ -57,35 +57,3 @@ class Token:
 
     def __repr__(self):
         return f'{self.type.name}: {self.value if self.value else OperatorRepr[self.type.name].value}'
-
-# TODO: Evaluate & replece if not needed...
-class RegularExpression:
-    def __init__(self, regex):
-        self.regex = regex
-
-    def thompson_construction(self):
-        """ parse regex to NFA """
-        self.insert_concat_symbol()
-        regular_expr = self.parse_infix_to_postfix()
-        # TODO: parse regex from infix to postfix
-
-    def is_symbol(char):
-        """ checks if the character is a symbol and not an operator """
-        # return char not in OPERATOR_PRIORITIES.keys()
-        pass
-
-    def insert_concat_symbol(self):
-        """ TODO: add concar symbol """
-        pass
-
-    def parse_infix_to_postfix(self):
-        """ TODO: postfix form of the expression """
-        pass
-
-    def create_tree_representation(self):
-        """ TODO: implement tree parsing method """
-        pass
-
-    def create_automaton(self):
-        """ TODO: project requirement, parse tree of regex to a DFA repr """
-        pass

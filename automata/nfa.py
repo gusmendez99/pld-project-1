@@ -1,6 +1,6 @@
 from automata.base import Automaton
 from graphviz import Digraph
-from utils.common import camel_to_snake, save_file
+from utils.common import save_file
 from tokenization.regex import EPSILON
 from tree.node import *
 
@@ -123,9 +123,9 @@ class NFA(Automaton):
         self.final_states.append(self.current_state)
         self.final_states = self.current_state
 
-    def render_digraph(self):
-        save_file(GRAPHVIZ_OUTPUT_PATH, self.digraph.source)
-        self.digraph.render(GRAPHVIZ_OUTPUT_PATH, view=True)
+    def render_digraph(self, filename = None, view = True):
+        save_file(filename if filename else GRAPHVIZ_OUTPUT_PATH, self.digraph.source)
+        self.digraph.render(filename if filename else GRAPHVIZ_OUTPUT_PATH, view=view)
     
     # For Thompson node representation inside digraph
     def render_thompson_node_children(

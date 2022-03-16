@@ -7,10 +7,13 @@ def save_file(filename, data):
 
 
 def load_file(filename):
+    contents = None
     with open(filename, 'r') as f:
         contents = f.read()
     return contents
 
-# Str
-def camel_to_snake(s):
-    return ''.join(['_'+c.lower() if c.isupper() else c for c in s]).lstrip('_')
+def load_txt_file(filename):
+    lines = []
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    return lines

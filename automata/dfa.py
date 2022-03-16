@@ -168,7 +168,7 @@ class DFA(Automaton):
         # Final check for acceptance
         self.regex_accept_status = current_state in self.final_states
 
-    def render_digraph(self):
+    def render_digraph(self, filename = None, view=True):
         states = set(self.transitions.keys())
         final_states = set(self.final_states)
         symbols = set(self.symbols)
@@ -184,6 +184,6 @@ class DFA(Automaton):
         graph = dfa_digraph.trim().to_graphviz()
         graph.attr(rankdir='LR')
 
-        save_file(GRAPHVIZ_OUTPUT_PATH, graph.source)
-        graph.render(GRAPHVIZ_OUTPUT_PATH, format='pdf', view=True)
+        save_file(filename if filename else GRAPHVIZ_OUTPUT_PATH, graph.source)
+        graph.render(filename if filename else GRAPHVIZ_OUTPUT_PATH, format='pdf', view=view)
     

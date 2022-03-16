@@ -1,0 +1,10 @@
+(a|b)*.a(a|b).(a|b)+
+(a|b)*.a(a|b).(a|b)
+(a|e).b.(a+).c?
+(e.a|e.b)*.a.b.b
+(a*|b*).c
+(b|b)*.a.b.b.(a|b)*
+(a|e).b.(a+).c?
+b*.a.b?
+b+a.b.c+
+a.b*a.b*
