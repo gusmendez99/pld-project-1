@@ -129,5 +129,6 @@ dmypy.json
 .pyre/
 
 # Renders
+.DS_Store
 renders/*.*
 tests/renders/*.*

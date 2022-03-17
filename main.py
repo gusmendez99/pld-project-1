@@ -167,11 +167,17 @@ def main():
                 print(TESTS_MENU)
                 test_option = int(input('> '))
 
-                if test_option == 1:
+                if test_option == 1 or test_option == 2:
                     clean_test_render_folder()
                     try:
-                        # Test ABC txt file
-                        test_lines = load_txt_file(ABC_TEST_PATH)
+                        test_lines = []
+                        if test_option == 1:
+                            # Test ABC txt file
+                            test_lines = load_txt_file(ABC_TEST_PATH)
+                        elif test_option == 2:
+                            # Test Binary txt file
+                            test_lines = load_txt_file(BINARY_TEST_PATH)
+
                         iteration = 0
                         for regex_test in test_lines:
                             # Simulation input is not required, we only want to generate the NFA & DFA outputs 
@@ -189,18 +195,9 @@ def main():
                             )
                             iteration += 1
 
-                        print('-> ABC tests passed!')
+                        print(f"-> {'ABC' if test_option == 1 else 'Binary' } tests passed!")
                     except Exception as e:
                         print(f'\n\tAn error ocurred, please regex on test file: {e}')
-
-                elif test_option == 2:
-                    clean_test_render_folder()
-                    try:
-                        # Test Binary txt file
-                        print('-> Binary tests passed!')
-                    except Exception as e:
-                        print(f'\n\tAn error ocurred, please check your regex: {e}')
-
                 elif test_option == 3:
                     test_option = 0
                 else:
