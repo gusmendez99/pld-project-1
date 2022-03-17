@@ -1,3 +1,5 @@
+import os
+
 """
  Open & Save File
 """
@@ -17,3 +19,9 @@ def load_txt_file(filename):
     with open(filename, 'r') as f:
         lines = f.readlines()
     return lines
+
+
+def clean_test_render_folder():
+    dir = './tests/renders'
+    for f in os.listdir(dir):
+        os.remove(os.path.join(dir, f))

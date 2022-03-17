@@ -5,7 +5,8 @@ from automata.nfa import NFA
 from automata.dfa import DFA
 from automata.regex_dfa import RegexDFA
 # utils
-from utils.common import load_txt_file
+from utils.common import load_txt_file, clean_test_render_folder
+from time import process_time
 
 ABC_TEST_PATH = './tests/abc_tests.txt'
 BINARY_TEST_PATH = './tests/bin_tests.txt'
@@ -54,8 +55,13 @@ def test_thompson_and_subsets(regex, input_test = None, simulate = False, render
     # NFA (with Thompson)
     nfa = NFA(tree, tokenizer.symbols_stream, input_test)
     if simulate and input_test:
+        start_time = process_time()
         nfa.simulate()
+        end_time = process_time()
         print(f"NFA accepts input '{input_test}'? ", nfa.regex_accept_status)
+
+        simulation_time = end_time - start_time
+        print(f"-> Simulation Time: {simulation_time:.6f} s\n")
     if render:
         nfa.render_digraph(output_filename.replace('FA', 'NFA'), view_pdf)
         print('[OUT] NFA digraph generated!')
@@ -64,8 +70,13 @@ def test_thompson_and_subsets(regex, input_test = None, simulate = False, render
     dfa = DFA(tokenizer.symbols_stream, input_test)
     dfa.from_NFA(nfa)
     if simulate and input_test:
+        start_time = process_time()
         dfa.simulate()
+        end_time = process_time()
         print(f"DFA accepts input '{input_test}'? ", dfa.regex_accept_status)
+
+        simulation_time = end_time - start_time
+        print(f"-> Simulation Time: {simulation_time:.6f} s\n")
     if render:
         dfa.render_digraph(output_filename.replace('FA', 'DFA'), view_pdf)
         print('[OUT] DFA digraph generated!')
@@ -80,8 +91,13 @@ def test_direct_method(regex, input_test = None, simulate = False, render=True, 
     # Direct DFA (from regex)
     regex_dfa = RegexDFA(tree, tokenizer.symbols_stream, input_test)
     if simulate and input_test:
+        start_time = process_time()
         regex_dfa.simulate()
+        end_time = process_time()
         print(f"Direct DFA accepts input '{input_test}'? ", regex_dfa.regex_accept_status)
+
+        simulation_time = end_time - start_time
+        print(f"-> Simulation Time: {simulation_time:.6f} s\n")
     if render:
         regex_dfa.render_digraph(output_filename, view_pdf)
         print('[OUT] Direct DFA digraph generated!')
@@ -152,6 +168,7 @@ def main():
                 test_option = int(input('> '))
 
                 if test_option == 1:
+                    clean_test_render_folder()
                     try:
                         # Test ABC txt file
                         test_lines = load_txt_file(ABC_TEST_PATH)
@@ -177,6 +194,7 @@ def main():
                         print(f'\n\tAn error ocurred, please regex on test file: {e}')
 
                 elif test_option == 2:
+                    clean_test_render_folder()
                     try:
                         # Test Binary txt file
                         print('-> Binary tests passed!')
